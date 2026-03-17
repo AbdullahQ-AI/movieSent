@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MovieSent — Sentiment Analysis</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">🎬 MovieSent</div>
+            <p class="tagline">Dual Approach Sentiment Analysis</p>
+        </div>
+    </header>
+
+    <!-- Main -->
+    <main class="container">
+
+        <!-- Stats Bar -->
+        <div class="stats-bar">
+            <div class="stat">
+                <span class="stat-number">50K</span>
+                <span class="stat-label">Reviews Trained</span>
+            </div>
+            <div class="stat">
+                <span class="stat-number">90.33%</span>
+                <span class="stat-label">LR Accuracy</span>
+            </div>
+            <div class="stat">
+                <span class="stat-number">87.53%</span>
+                <span class="stat-label">LSTM Accuracy</span>
+            </div>
+            <div class="stat">
+                <span class="stat-number">2</span>
+                <span class="stat-label">AI Models</span>
+            </div>
+        </div>
+
+        <!-- Input Card -->
+        <div class="card">
+            <h2 class="card-title">🎯 Analyze Movie Review</h2>
+
+            <!-- Review Input -->
+            <div class="input-group">
+                <label class="input-label">Movie Review</label>
+                <textarea 
+                    id="reviewInput" 
+                    class="textarea"
+                    placeholder="Enter a movie review here... e.g. 'This movie was absolutely amazing! The acting was superb and the story kept me engaged throughout.'"
+                    rows="5"
+                ></textarea>
+                <div class="char-count">
+                    <span id="charCount">0</span> characters
+                </div>
+            </div>
+
+            <!-- Model Selection -->
+            <div class="input-group">
+                <label class="input-label">Select AI Model</label>
+                <div class="model-selector">
+                    <div class="model-card active" id="lrCard" onclick="selectModel('lr')">
+                        <div class="model-icon">📊</div>
+                        <div class="model-info">
+                            <div class="model-name">Logistic Regression</div>
+                            <div class="model-desc">Fast & Accurate — 90.33%</div>
+                        </div>
+                        <div class="model-badge winner">⭐ Winner</div>
+                    </div>
+                    <div class="model-card" id="lstmCard" onclick="selectModel('lstm')">
+                        <div class="model-icon">🧠</div>
+                        <div class="model-info">
+                            <div class="model-name">LSTM Neural Network</div>
+                            <div class="model-desc">Deep Learning — 87.53%</div>
+                        </div>
+                        <div class="model-badge">🔬 DL</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Analyze Button -->
+            <button class="btn-analyze" id="analyzeBtn" onclick="analyzeSentiment()">
+                <span id="btnText">🔍 Analyze Sentiment</span>
+            </button>
+        </div>
+
+        <!-- Result Card -->
+        <div class="card result-card" id="resultCard" style="display:none;">
+            <h2 class="card-title">📊 Analysis Result</h2>
+
+            <div class="result-content">
+                <!-- Sentiment Badge -->
+                <div class="sentiment-badge" id="sentimentBadge">
+                    <span class="sentiment-emoji" id="sentimentEmoji"></span>
+                    <span class="sentiment-text" id="sentimentText"></span>
+                </div>
+
+                <!-- Confidence Bar -->
+                <div class="confidence-section">
+                    <div class="confidence-header">
+                        <span>Confidence Score</span>
+                        <span id="confidenceValue" class="confidence-value"></span>
+                    </div>
+                    <div class="confidence-bar">
+                        <div class="confidence-fill" id="confidenceFill"></div>
+                    </div>
+                </div>
+
+                <!-- Details -->
+                <div class="result-details">
+                    <div class="detail-item">
+                        <span class="detail-label">Model Used</span>
+                        <span class="detail-value" id="modelUsed"></span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Review Preview</span>
+                        <span class="detail-value" id="reviewPreview"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sample Reviews -->
+        <div class="card">
+            <h2 class="card-title">💡 Try Sample Reviews</h2>
+            <div class="samples-grid">
+                <div class="sample-item positive" onclick="useSample(this)">
+                    <span class="sample-tag">😊 Positive</span>
+                    <p>This movie was absolutely brilliant! The storytelling was masterful and the performances were outstanding.</p>
+                </div>
+                <div class="sample-item negative" onclick="useSample(this)">
+                    <span class="sample-tag">😞 Negative</span>
+                    <p>Terrible film. Complete waste of time and money. The plot made no sense and acting was awful.</p>
+                </div>
+                <div class="sample-item positive" onclick="useSample(this)">
+                    <span class="sample-tag">😊 Positive</span>
+                    <p>One of the best films I have ever seen! Incredible direction and a storyline that keeps you hooked.</p>
+                </div>
+                <div class="sample-item negative" onclick="useSample(this)">
+                    <span class="sample-tag">😞 Negative</span>
+                    <p>Disappointing movie. The trailer was misleading and the actual film had no substance whatsoever.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Model Comparison -->
+        <div class="card">
+            <h2 class="card-title">🏆 Model Comparison</h2>
+            <div class="comparison-table">
+                <div class="comp-header">
+                    <div>Metric</div>
+                    <div>📊 Logistic Regression</div>
+                    <div>🧠 LSTM</div>
+                </div>
+                <div class="comp-row">
+                    <div>Accuracy</div>
+                    <div class="winner-cell">90.33% ⭐</div>
+                    <div>87.53%</div>
+                </div>
+                <div class="comp-row">
+                    <div>Precision</div>
+                    <div class="winner-cell">89.72% ⭐</div>
+                    <div>87.68%</div>
+                </div>
+                <div class="comp-row">
+                    <div>Recall</div>
+                    <div class="winner-cell">91.09% ⭐</div>
+                    <div>87.33%</div>
+                </div>
+                <div class="comp-row">
+                    <div>F1-Score</div>
+                    <div class="winner-cell">90.40% ⭐</div>
+                    <div>87.51%</div>
+                </div>
+                <div class="comp-row">
+                    <div>Training Speed</div>
+                    <div class="winner-cell">Seconds ⭐</div>
+                    <div>Minutes</div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>🎬 MovieSent — Dual Approach Sentiment Analysis</p>
+        <p>Built with Python, Flask, TF-IDF & LSTM</p>
+    </footer>
+
+    <script>
+        let selectedModel = 'lr';
+
+        // Model select karo
+        function selectModel(model) {
+            selectedModel = model;
+            document.getElementById('lrCard').classList.toggle('active', model === 'lr');
+            document.getElementById('lstmCard').classList.toggle('active', model === 'lstm');
+        }
+
+        // Character count
+        document.getElementById('reviewInput').addEventListener('input', function() {
+            document.getElementById('charCount').textContent = this.value.length;
+        });
+
+        // Sample use karo
+        function useSample(el) {
+            const text = el.querySelector('p').textContent;
+            document.getElementById('reviewInput').value = text;
+            document.getElementById('charCount').textContent = text.length;
+        }
+
+        // Sentiment analyze karo
+        async function analyzeSentiment() {
+            const review = document.getElementById('reviewInput').value.trim();
+
+            if (!review) {
+                alert('Please enter a movie review!');
+                return;
+            }
+
+            // Loading state
+            const btn = document.getElementById('analyzeBtn');
+            const btnText = document.getElementById('btnText');
+            btn.disabled = true;
+            btnText.textContent = '⏳ Analyzing...';
+
+            try {
+                const response = await fetch('/predict', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        review: review,
+                        model: selectedModel
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.error) {
+                    alert('Error: ' + data.error);
+                    return;
+                }
+
+                showResult(data);
+
+            } catch (err) {
+                alert('Something went wrong. Please try again!');
+            } finally {
+                btn.disabled = false;
+                btnText.textContent = '🔍 Analyze Sentiment';
+            }
+        }
+
+        // Result dikhao
+        function showResult(data) {
+            const isPositive = data.sentiment === 'Positive';
+
+            // Badge
+            const badge = document.getElementById('sentimentBadge');
+            badge.className = 'sentiment-badge ' + (isPositive ? 'positive' : 'negative');
+            document.getElementById('sentimentEmoji').textContent = isPositive ? '😊' : '😞';
+            document.getElementById('sentimentText').textContent = data.sentiment;
+
+            // Confidence
+            document.getElementById('confidenceValue').textContent = data.confidence + '%';
+            const fill = document.getElementById('confidenceFill');
+            fill.style.width = data.confidence + '%';
+            fill.className = 'confidence-fill ' + (isPositive ? 'positive' : 'negative');
+
+            // Details
+            document.getElementById('modelUsed').textContent = data.model;
+            document.getElementById('reviewPreview').textContent = data.review;
+
+            // Show card
+            const card = document.getElementById('resultCard');
+            card.style.display = 'block';
+            card.scrollIntoView({ behavior: 'smooth' });
+        }
+    </script>
+
+</body>
+</html>

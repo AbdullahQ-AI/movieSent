@@ -1,0 +1,6 @@
+﻿venv/
+__pycache__/
+models/
+*.pyc
+IMDB Dataset.csv
+train_lstm.py
